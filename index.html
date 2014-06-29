@@ -1,9 +1,10 @@
 <html>
 	<head>
-		<title>My first Three.js app</title>
+		<title>WebGL Dev</title>
 
 		<!-- Load Default Scripts -->
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+		<script type="text/javascript" src="lib/glMatrix-0.9.5.min.js"></script>
 		<script type="text/javascript" src="js/util.js"></script>
 
 		<!-- Load example script here -->
@@ -11,9 +12,27 @@
 
 	</head>
 	<body>
-		<!-- Load Test Javascript here -->
+		<!-- Load shaders here -->
+		<script id="shader-fs" type="x-shader/x-fragment">
+			precision mediump float;
 
-		<canvas id="glcanvas" width="640" height="480">
+			void main(void) {
+		  		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+			}
+		</script>
+
+		<script id="shader-vs" type="x-shader/x-vertex">
+			attribute vec3 aVertexPosition;
+
+			uniform mat4 uMVMatrix;
+			uniform mat4 uPMatrix;
+
+			void main(void) {
+				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+			}
+		</script>
+
+		<canvas id="glcanvas" width="500" height="500">
 			Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
 		</canvas>
 	</body>
