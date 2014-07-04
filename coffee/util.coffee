@@ -1,5 +1,7 @@
 # util.coffee
-
+SHADER_TYPE_FRAGMENT = "x-shader/x-fragment";
+SHADER_TYPE_VERTEX = "x-shader/x-vertex";
+loadedShaders = {}
 
 window.initWebGL = (canvas) ->
 	gl = null
@@ -22,7 +24,79 @@ window.initWebGL = (canvas) ->
   
 	return gl;
 
-window.loadShader = (gl) ->
+window.loadShaderProg = (gl, vertex, fragment)->
+
+	# Check if both shaders are specified
+	if not fragment
+		fragment = "#{vertex}.fs"
+		vertex = "#{vertex}.vs"
+
+	# load shaders here
+	loadShader vertex, SHADER_TYPE_VERTEX
+	loadShader fragment, SHADER_TYPE_FRAGMENT
+
+	# Get the loaded shaders
+	vertShader = getShader gl, vertex
+	fragShader = getShader gl, fragment
+
+	# Create Shader Program, and add shaders
+	prog = gl.createProgram() 
+	gl.attachShader prog, vertShader
+	gl.attachShader prog, fragShader
+	gl.linkProgram prog
+
+	# Alert if there is an error
+	if not gl.getProgramParameter prog, gl.LINK_STATUS
+		alert "Could not initialise main shaders"
+
+	# Return created program
+	return prog
+
+loadShader = (file, type) ->
+	# check if the shader is loaded
+	if loadedShaders[file]
+		return loadedShaders[file]
+
+	cache = null
+	$.ajax 
+		async: 		false # need to wait... todo: deferred?
+		url: 			"shaders/#{file}" # todo: use global config for shaders folder?
+		success: 	(result)-> cache = 
+			script: result
+			type: type
+		error: (req, status, err) ->
+			alert "Failed to load shader '#{file}' with status:#{status} Error:#{err}"
+
+	loadedShaders[file] = cache
+       
+getShader = (gl, id) ->
+	shaderObj = loadedShaders[id]
+	shaderScript = shaderObj.script
+	shaderType = shaderObj.type
+
+	# Create proper Handler
+	shader = null
+	if shaderType is SHADER_TYPE_FRAGMENT
+		shader = gl.createShader gl.FRAGMENT_SHADER
+	else if shaderType is SHADER_TYPE_VERTEX
+		shader = gl.createShader gl.VERTEX_SHADER
+	else 
+		return null
+	
+	# wire up the shader and compile
+	gl.shaderSource shader, shaderScript
+	gl.compileShader shader
+
+	# if things didn't go so well alert
+	if not gl.getShaderParameter shader, gl.COMPILE_STATUS
+		alert gl.getShaderInfoLog shader
+		return null
+	
+	return shader
+
+
+###
+loadShader = (vertex, shaderType) ->
 	# get shaders
 	fragShader = getShader gl, "shader-fs"
 	vertShader = getShader gl, "shader-vs"
@@ -83,4 +157,8 @@ getShader = (gl, id) ->
           return null
 
       return shader
+###
+
+
+
   

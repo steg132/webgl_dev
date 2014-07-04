@@ -11,11 +11,24 @@ squareVertBuff = null
 
 shaderProgram = null
 
+initShader = (gl, prog)->
+	# Use programs
+	gl.useProgram prog
+
+	prog.vertexPositionAttribute = gl.getAttribLocation prog, "aVertexPosition"
+	gl.enableVertexAttribArray prog.vertexPositionAttribute
+
+	prog.pMatrixUniform = gl.getUniformLocation prog, "uPMatrix"
+	prog.mvMatrixUniform = gl.getUniformLocation prog, "uMVMatrix"
 
 
 window.onload = ->
 	gl = window.initWebGL $("#glcanvas")[0]
-	shaderProgram = window.loadShader gl
+	shaderProgram = window.loadShaderProg gl, "basic"
+
+	# Init the shader program
+	initShader gl, shaderProgram
+
 	loadBuffers()
 
 	gl.clearColor 0.0, 0.0, 0.0, 1.0
